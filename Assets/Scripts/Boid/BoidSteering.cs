@@ -12,8 +12,10 @@ public class BoidSteering : Agent
     [SerializeField] private Agent _targetAgent;
     [SerializeField] private float detectionRadius;
     [SerializeField] private float baitDetectionRadius = 8f;
-   
-                
+    [SerializeField] private float respawnDelay = 5f;
+    public float RespawnDelay => respawnDelay;
+
+
     [SerializeField] private float separationRadius;
     [SerializeField] private float alignmentRadius;
     [SerializeField] private float cohesionRadius;
@@ -28,9 +30,10 @@ public class BoidSteering : Agent
     private BoidHealth _health;
     private List<BoidSteering> _nearbyBoids = new List<BoidSteering>();
     private List<Bait> _nearbyBaits = new List<Bait>();
+    private BoidSpawner _boidSpawner;
 
-    
-    
+
+
     [SerializeField] private float evadeExitMultiplier = 1.3f;
     [SerializeField] private float evadeSteeringMultiplier = 3f;
     StateMachine _stateMachine;
@@ -46,7 +49,11 @@ public class BoidSteering : Agent
         _stateMachine.RegisterState(BoidStateType.Flocking, new BoidFlockingState (_stateMachine, this));
         _stateMachine.RegisterState(BoidStateType.Evade, new BoidEvadeState(_stateMachine, this));
         _stateMachine.RegisterState(BoidStateType.Arrive, new BoidArriveState(_stateMachine, this));
+        _stateMachine.RegisterState(BoidStateType.Consume, new BoidConsumeState(_stateMachine, this));
+        _stateMachine.RegisterState(BoidStateType.Dead, new BoidDeadState(_stateMachine, this));
+        _stateMachine.RegisterState(BoidStateType.Respawn, new BoidRespawnState(_stateMachine, this));
         _stateMachine.RegisterState(BoidStateType.Down, new BoidDownState(_stateMachine, this));
+
         _stateMachine.ChangeState(BoidStateType.Flocking);
 
 
@@ -101,15 +108,40 @@ public class BoidSteering : Agent
     }
     public void EatBait(Transform bait)
     {
+        if (bait == null) return;
+
         Bait component = bait.GetComponent<Bait>();
-        if (component != null) component.TakeDamage(100);
-       
+        if (component != null) component.TakeDamage(1);
     }
 
     public void Sleep()
     {
         _velocity = Vector3.zero;
         if(_health != null) _health.ForceDown();
+    }
+
+    public void ResetMovement()
+    {
+        Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f));
+
+        _velocity = randomDirection.normalized * maxSpeed;
+    }
+
+    public void Respawn()
+    {
+        if (_health == null)
+            _health = GetComponent<BoidHealth>();
+
+        if (_boidSpawner != null)
+        {
+            Transform spawnPoint = _boidSpawner.GetRandomSpawnPoint();
+
+            if (spawnPoint != null)
+                transform.position = spawnPoint.position;
+        }
+
+        _health.ResetHealth();
+        ResetMovement();
     }
 
     public void Move(Vector3 steering)
@@ -128,6 +160,17 @@ public class BoidSteering : Agent
     public void SetGoatPen(GoatPen pen)
     {
         goatPen = pen;
+    }
+
+    public void SetBoidSpawner(BoidSpawner spawner)
+    {
+        _boidSpawner = spawner;
+    }
+
+    public void StartRespawn()
+    {
+        if (_stateMachine != null)
+            _stateMachine.ChangeState(BoidStateType.Respawn);
     }
 
     public Vector3 Flocking()
@@ -311,7 +354,15 @@ public class BoidSteering : Agent
     {
         var futurePosition = CalculateFuture(target); 
         return Flee(futurePosition);
-    } 
+    }
+
+    public void SetVisible(bool visible)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+
+        foreach (Renderer renderer in renderers)
+            renderer.enabled = visible;
+    }
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;

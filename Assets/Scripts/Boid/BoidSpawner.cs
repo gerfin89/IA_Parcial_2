@@ -22,6 +22,17 @@ public class BoidSpawner : MonoBehaviour
         BoidSteering steering = boid.GetComponent<BoidSteering>();
 
         if (steering != null)
+        {
             steering.SetGoatPen(goatPen);
+            steering.SetBoidSpawner(this);
+        }
+    }
+
+    public Transform GetRandomSpawnPoint()
+    {
+        if (spawnPoints == null || spawnPoints.Count == 0)
+            return null;
+
+        return spawnPoints[Random.Range(0, spawnPoints.Count)];
     }
 }

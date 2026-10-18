@@ -48,4 +48,13 @@ public class BoidHealth : MonoBehaviour
         if( _renderer != null ) 
             _renderer.material.color = _damagedColor;
     }
+
+    public void ResetHealth()
+    {
+        _currentHealth = maxHealth;
+        _isDown = false;
+
+        if (_renderer != null)
+            _renderer.material.color = _originalColor;
+    }
 }

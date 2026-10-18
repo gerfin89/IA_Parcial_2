@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a030b3cd404e2f42ae262a44d7eaa8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bait
-  maxHealth: 1
+  maxHealth: 3
 --- !u!135 &-4201461166817898108
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -18,7 +18,7 @@ public class BoidArriveState : State
     public override void Update()
     {
 
-        if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Down); return; }
+        if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Dead); return; }
         if (_boid.IsThreatDetected(false)) { stateMachine.ChangeState(BoidStateType.Evade); return; }
 
         if (_bait == null && !_boid.TryGetBait(out _bait))
@@ -28,13 +28,10 @@ public class BoidArriveState : State
         }
 
         _boid.Move(_boid.ArriveSteering(_bait));
-
         if (_boid.IsAtBait(_bait))
         {
-            _boid.EatBait(_bait);
-            stateMachine.ChangeState(BoidStateType.Down);
-
-
+            stateMachine.ChangeState(BoidStateType.Consume);
+            return;
         }
     }
 }

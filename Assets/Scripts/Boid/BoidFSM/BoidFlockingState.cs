@@ -12,7 +12,7 @@ public class BoidFlockingState : State
 
     public override void Update()
     {
-        if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Down); return; }
+        if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Dead); return; }
         if (_boid.IsThreatDetected(false)) { stateMachine.ChangeState(BoidStateType.Evade); return; }
         if (_boid.TryGetBait(out _)) { stateMachine.ChangeState(BoidStateType.Arrive); return; }
 

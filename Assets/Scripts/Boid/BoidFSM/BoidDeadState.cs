@@ -1,0 +1,20 @@
+public class BoidDeadState : State
+{
+    private readonly BoidSteering _boid;
+
+    public BoidDeadState(StateMachine stateMachine, BoidSteering boid)
+        : base(stateMachine)
+    {
+        _boid = boid;
+    }
+
+    public override void Enter()
+    {
+        _boid.Sleep();
+    }
+
+    public override void Update()
+    {
+        
+    }
+}

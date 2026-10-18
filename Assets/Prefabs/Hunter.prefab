@@ -176,11 +176,11 @@ MonoBehaviour:
   dataAttack:
     target: {fileID: 0}
     meleeAtackRadius: 2
-    rangeAttackRadius: 5
-    visionRadius: 10
+    rangeAttackRadius: 3.5
+    visionRadius: 5
   dataGather:
     target: {fileID: 0}
-    visionRadius: 10
+    visionRadius: 5
     gatherDistance: 1.5
     gatherTime: 3
     boidSpawner: {fileID: 0}
@@ -231,7 +231,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 3
+  m_Radius: 5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6017452936247555109
 GameObject:

@@ -59,14 +59,15 @@ public class GatherState : State
 
             if (_timer >= _data.gatherTime)
             {
-                Object.Destroy(_data.target.gameObject);
+                BoidSteering boid = _data.target.GetComponent<BoidSteering>();
+
+                if (boid != null)
+                {
+                    boid.SetBoidSpawner(_data.boidSpawner);
+                    boid.StartRespawn();
+                }
 
                 _data.target = null;
-
-                if (_data.boidSpawner != null)
-                { 
-                _data.boidSpawner.SpawnBoid(); 
-                }
                 stateMachine.ChangeState(FarmerState.Patrol);
             }
         }
