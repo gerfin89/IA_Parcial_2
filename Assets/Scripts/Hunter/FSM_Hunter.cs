@@ -57,6 +57,7 @@ public class FSM_Hunter : Agent
 
     public Transform BoidInVision(float visionRadius)
     {
+        Debug.Log("Hunter: Boids detectados = " + _nearbyBoid.Count);
         Transform inVision = null;
 
         float minDistance = Mathf.Infinity;
@@ -83,6 +84,7 @@ public class FSM_Hunter : Agent
 
     public Transform FallendBoidInVision(float visionRadius)
     {
+
         Transform inVision = null;
         float minDistance = Mathf.Infinity;
 
@@ -109,8 +111,9 @@ public class FSM_Hunter : Agent
 
     private void OnTriggerEnter(Collider other)
     {
-        BoidSteering boid = other.GetComponent<BoidSteering>();
-        if (boid != null)
+        BoidSteering boid = other.GetComponentInParent<BoidSteering>();
+
+        if (boid != null && !_nearbyBoid.Contains(boid))
         {
             _nearbyBoid.Add(boid);
         }
@@ -118,7 +121,8 @@ public class FSM_Hunter : Agent
 
     private void OnTriggerExit(Collider other)
     {
-        BoidSteering boid = other.GetComponent<BoidSteering>();
+        BoidSteering boid = other.GetComponentInParent<BoidSteering>();
+
         if (boid != null)
         {
             _nearbyBoid.Remove(boid);

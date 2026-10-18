@@ -122,8 +122,8 @@ GameObject:
   m_Component:
   - component: {fileID: 902537210762375514}
   - component: {fileID: 8278650209837708929}
-  - component: {fileID: 2255981322224048081}
-  - component: {fileID: 5361029930115220628}
+  - component: {fileID: 7641386480748994089}
+  - component: {fileID: 8530273742874522785}
   m_Layer: 0
   m_Name: Hunter
   m_TagString: Untagged
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81bde4f1eaeafa948855e845d43edc06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FSM_Hunter
-  maxSpeed: 5
+  maxSpeed: 7
   dataPatrol:
     wayPoints:
     - {fileID: 0}
@@ -167,25 +167,25 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     transform: {fileID: 902537210762375514}
-    wayPointCheckDistance: 4
+    wayPointCheckDistance: 1
     baitPrefab: {fileID: 98230039591851437, guid: 42309429fa851e6408534262c6cd5978, type: 3}
-    baitSpawnTime: 3
+    baitSpawnTime: 5
     maxBaits: 5
     spawnAreaMin: {x: 0, y: 0, z: 0}
     spawnAreaMax: {x: 0, y: 0, z: 0}
   dataAttack:
-    target: {fileID: 1598557120226398076, guid: bfb02adc7b8071147803cae2bba5ab4c, type: 3}
-    meleeAtackRadius: 1
-    rangeAttackRadius: 2
-    visionRadius: 6
+    target: {fileID: 0}
+    meleeAtackRadius: 2
+    rangeAttackRadius: 5
+    visionRadius: 10
   dataGather:
-    target: {fileID: 1598557120226398076, guid: bfb02adc7b8071147803cae2bba5ab4c, type: 3}
-    visionRadius: 4
-    gatherDistance: 0.1
-    gatherTime: 2
+    target: {fileID: 0}
+    visionRadius: 10
+    gatherDistance: 1.5
+    gatherTime: 3
     boidSpawner: {fileID: 0}
-  tba: 5
---- !u!54 &2255981322224048081
+  tba: 2
+--- !u!54 &7641386480748994089
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -212,7 +212,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!135 &5361029930115220628
+--- !u!135 &8530273742874522785
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -231,7 +231,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 6
+  m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6017452936247555109
 GameObject:

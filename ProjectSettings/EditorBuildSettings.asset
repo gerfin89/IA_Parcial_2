@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Parcial1-IA-Recuperatorio.unity
+    guid: 130f1fc808ee6dc4e948b270a03ab9bc
+  - enabled: 1
     path: Assets/Parcial1-IA.unity
     guid: caf6024a982a33041a5df2f15c950d39
   - enabled: 1

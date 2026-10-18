@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 1598557120226398076}
   - component: {fileID: 5192919165491184485}
   - component: {fileID: 7035625999126387902}
-  - component: {fileID: 1912228782271561792}
-  - component: {fileID: 1068916773411905989}
+  - component: {fileID: 2779321632815705169}
+  - component: {fileID: 8581626703882273436}
   m_Layer: 0
   m_Name: Boid
   m_TagString: Untagged
@@ -48,20 +48,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74b978565541e844aa2d38cb91901107, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoidSteering
-  maxSpeed: 8
-  _target: {fileID: 902537210762375514, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
-  maxSteering: 10
-  slowingDistance: 3
-  minDistance: 0.1
-  _targetAgent: {fileID: 8278650209837708929, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
-  detectionRadius: 7
-  baitDetectionRadius: 3
+  maxSpeed: 5
+  maxSteering: 5
+  slowingDistance: 2
+  minDistance: 0.5
+  _targetAgent: {fileID: 0}
+  detectionRadius: 8
+  baitDetectionRadius: 5
   separationRadius: 2
   alignmentRadius: 5
-  cohesionRadius: 4
-  separationWeight: 1.79
-  alignmentWeight: 1.5
-  cohesionWeight: 0.12
+  cohesionRadius: 5
+  goatPen: {fileID: 0}
+  separationWeight: 1.5
+  alignmentWeight: 1
+  cohesionWeight: 1
   evadeExitMultiplier: 1.3
   evadeSteeringMultiplier: 3
 --- !u!114 &7035625999126387902
@@ -76,11 +76,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f9dea51bf0b28a4cb914f2a4b6cb907, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoidHealth
-  maxHealth: 1
-  _renderer: {fileID: 8815192812127622015}
+  maxHealth: 2
+  _renderer: {fileID: 0}
   _damagedColor: {r: 1, g: 0.7529413, b: 0.7960785, a: 1}
   _originalColor: {r: 0, g: 0, b: 0, a: 0}
---- !u!135 &1912228782271561792
+--- !u!135 &2779321632815705169
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -99,9 +99,9 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 7
+  m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &1068916773411905989
+--- !u!54 &8581626703882273436
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -2,17 +2,11 @@ using UnityEngine;
 
 public class GoatPen : MonoBehaviour
 {
-    public static GoatPen instance { get; private set; }
     [SerializeField] private float height;
     [SerializeField] private float width;
     [SerializeField] private bool drawGizmos;
 
-    private void Awake()
-    {
-        if(instance == null) instance = this;
-        else Destroy(gameObject);
-    }
-
+   
     public Vector3 OutOfGoatPen(Vector3 position)
     {
         Vector3 newPosition = position;

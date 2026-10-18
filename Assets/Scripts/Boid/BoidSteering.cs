@@ -18,6 +18,8 @@ public class BoidSteering : Agent
     [SerializeField] private float alignmentRadius;
     [SerializeField] private float cohesionRadius;
 
+    [SerializeField] private GoatPen goatPen;
+
 
     [SerializeField, Range(0f, 3f)] private float separationWeight = 1f;
     [SerializeField, Range(0f, 3f)] private float alignmentWeight = 1f;
@@ -82,7 +84,7 @@ public class BoidSteering : Agent
             }
 
             float distance = Vector3.Distance(transform.position, candidate.transform.position);
-            if (distance < baitDetectionRadius && distance < minDist)
+            if (distance <= baitDetectionRadius && distance < minDist)
             {
                 minDist = distance;
                 bait = candidate.transform;
@@ -119,9 +121,15 @@ public class BoidSteering : Agent
         if (_velocity != Vector3.zero)
             transform.forward = _velocity;
 
-        transform.position = GoatPen.instance.OutOfGoatPen(transform.position);
+        if (goatPen != null)
+            transform.position = goatPen.OutOfGoatPen(transform.position);
     }
-   
+
+    public void SetGoatPen(GoatPen pen)
+    {
+        goatPen = pen;
+    }
+
     public Vector3 Flocking()
     {
         _nearbyBoids.RemoveAll(b => b == null);
@@ -264,30 +272,35 @@ public class BoidSteering : Agent
         return (futurePosition);
     }
 
-    private void OnTriggerEnter (Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        BoidSteering otherBoid = other.GetComponent<BoidSteering>();
-        if (otherBoid != null && otherBoid != this)
+        BoidSteering otherBoid = other.GetComponentInParent<BoidSteering>();
+
+        if (otherBoid != null && otherBoid != this && !_nearbyBoids.Contains(otherBoid))
         {
             _nearbyBoids.Add(otherBoid);
         }
 
-        Bait bait = other.GetComponent<Bait>();
-        if (bait != null)
+        Bait bait = other.GetComponentInParent<Bait>();
+
+        if (bait != null && !_nearbyBaits.Contains(bait))
         {
             _nearbyBaits.Add(bait);
+            Debug.Log("Boid detectó un cebo: " + bait.name);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        BoidSteering otherBoid = other.GetComponent<BoidSteering>();
-        if (otherBoid != null)
+        BoidSteering otherBoid = other.GetComponentInParent<BoidSteering>();
+
+        if (otherBoid != null && otherBoid != this)
         {
             _nearbyBoids.Remove(otherBoid);
         }
 
-        Bait bait = other.GetComponent<Bait>();
+        Bait bait = other.GetComponentInParent<Bait>();
+
         if (bait != null)
         {
             _nearbyBaits.Remove(bait);
