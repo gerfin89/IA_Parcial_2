@@ -9,6 +9,10 @@ public class BoidEvadeState : State
         _boid = Boid;
     }
 
+    public override void Enter()
+    {
+        _boid.UpdateStateText("Evade");
+    }
     public override void Update()
     {
         if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Dead); return; }

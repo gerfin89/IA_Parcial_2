@@ -8,7 +8,6 @@ public class PatrolState : State
     private int currentNode;
     private float _visionRadius;
     private float _gatherVisionRadius;
-    private HunterFeedBack _feedback;
     private float baitTimer;
     private List<GameObject> spawnedBait = new List<GameObject>(); 
     public PatrolState(FSM_Hunter hunter, PatrolData data, float visionRadius, float gatherVisionRadius, StateMachine stateMachine) : base(stateMachine) 
@@ -22,13 +21,9 @@ public class PatrolState : State
     public override void Enter()
     {
         base.Enter();
+        _hunter.ChangeColor(Color.blue);
         baitTimer = _data.baitSpawnTime;
-
-        if (_feedback != null)
-        {
-            _feedback.SetState("PATROL");
-        }
-        
+                       
     }
 
     public override void Exit()

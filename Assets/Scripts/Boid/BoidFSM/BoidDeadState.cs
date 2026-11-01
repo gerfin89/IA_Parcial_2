@@ -10,6 +10,7 @@ public class BoidDeadState : State
 
     public override void Enter()
     {
+        _boid.UpdateStateText("Dead");
         _boid.Sleep();
     }
 

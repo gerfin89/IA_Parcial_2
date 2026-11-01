@@ -5,7 +5,7 @@ public class BoidConsumeState : State
     private readonly BoidSteering _boid;
     private Transform _bait;
     private float _consumeTimer;
-    private const float ConsumeInterval = 1f;
+    
 
     public BoidConsumeState(StateMachine stateMachine, BoidSteering boid)
         : base(stateMachine)
@@ -15,8 +15,10 @@ public class BoidConsumeState : State
 
     public override void Enter()
     {
+        _boid.UpdateStateText("Consume");
         _consumeTimer = 0f;
         _boid.TryGetBait(out _bait);
+        _boid.StopMovement();
     }
 
     public override void Update()
@@ -47,7 +49,7 @@ public class BoidConsumeState : State
 
         _consumeTimer += Time.deltaTime;
 
-        if (_consumeTimer >= ConsumeInterval)
+        if (_consumeTimer >= _boid.ConsumeInterval)
         {
             _boid.EatBait(_bait);
             _consumeTimer = 0f;

@@ -18,6 +18,14 @@ public class GoatPen : MonoBehaviour
 
         return newPosition;
     }
+
+    public bool IsOutside(Vector3 position)
+    {
+        Vector3 localPosition = transform.InverseTransformPoint(position);
+
+        return Mathf.Abs(localPosition.x) > width / 2f ||
+               Mathf.Abs(localPosition.z) > height / 2f;
+    }
     private void OnDrawGizmos()
     {
         if (!drawGizmos) return;

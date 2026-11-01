@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum FarmerState
 {
@@ -7,6 +8,7 @@ public enum FarmerState
     Patrol,
     Attack,
     Gather,
+    Rest
 
 }
 
@@ -17,30 +19,88 @@ public class FSM_Hunter : Agent
     [SerializeField] private AttackState.AttackData dataAttack;
     [SerializeField] private GatherState.GatherData dataGather;    
     [SerializeField] private float tba;
+
+    [Header("Energy Hunter")]
+    [SerializeField] private float maxEnergy = 100f;
+    [SerializeField] private float energyConsumption = 10f;
+    [SerializeField] private float energyRecovery = 20f;
+
+    [Header("UI Stamina")]
+    [SerializeField] private Slider staminaBar;
+
+    [Header("Límit scenary")]
+    [SerializeField] private GoatPen goatPen;
+
+    public GoatPen GoatPen => goatPen;
+    private float _currentEnergy;
+    public bool IsEnergyEmpty => _currentEnergy <= 0f;
+    public bool IsEnergyFull => _currentEnergy >= maxEnergy;
     private StateMachine stateMachine;
+    private Vector3 _previousPosition;
 
     private float _tbaTimer;
     public bool IsTbaReady =>_tbaTimer <= 0;
     public void ResetTba() => _tbaTimer = tba;
+
+    public void ConsumeEnergy()
+    {
+        _currentEnergy -= energyConsumption * Time.deltaTime;
+        _currentEnergy = Mathf.Max(0f, _currentEnergy);
+
+        if (staminaBar != null)
+        {
+            staminaBar.value = _currentEnergy;
+        }
+    }
+    public void RecoverEnergy()
+    {
+        _currentEnergy += energyRecovery * Time.deltaTime;
+        _currentEnergy = Mathf.Min(_currentEnergy, maxEnergy);
+
+        if (staminaBar != null)
+        {
+            staminaBar.value = _currentEnergy;
+        }
+    }
+    public void ChangeColor(Color color)
+    {
+        Renderer renderer = GetComponentInChildren<Renderer>();
+
+        if (renderer != null)
+            renderer.material.color = color;
+    }
 
     private List<BoidSteering> _nearbyBoid = new List<BoidSteering>();
     
 
     private void Awake()
     {
+        _previousPosition = transform.position;
+        _currentEnergy = maxEnergy;
+
+        if (staminaBar != null)
+        {
+            staminaBar.minValue = 0f;
+            staminaBar.maxValue = maxEnergy;
+            staminaBar.value = _currentEnergy;
+        }
+
         stateMachine = new StateMachine();
 
         IdleState idleState = new IdleState(stateMachine);
         PatrolState patrolState = new PatrolState(this, dataPatrol,dataAttack.visionRadius,dataGather.visionRadius, stateMachine);
         AttackState attackState = new AttackState(this, dataAttack, stateMachine);
         GatherState gatherState = new GatherState(this, dataGather,stateMachine);
+        RestState restState = new RestState(this, stateMachine);
 
         stateMachine.RegisterState(FarmerState.Idle,idleState);
         stateMachine.RegisterState(FarmerState.Patrol, patrolState);
         stateMachine.RegisterState(FarmerState.Attack, attackState);
         stateMachine.RegisterState(FarmerState.Gather, gatherState);
-
+        stateMachine.RegisterState(FarmerState.Rest, restState);
+        
         stateMachine.ChangeState(FarmerState.Patrol);
+
         
     }
 
@@ -48,11 +108,20 @@ public class FSM_Hunter : Agent
     private void Update()
     {
         _nearbyBoid.RemoveAll(b => b == null);
+
         if (_tbaTimer > 0f)
         {
             _tbaTimer -= Time.deltaTime;
         }
+
         stateMachine.Update();
+
+        if (Time.deltaTime > 0f)
+        {
+            _velocity = (transform.position - _previousPosition) / Time.deltaTime;
+        }
+
+        _previousPosition = transform.position;
     }
 
     public Transform BoidInVision(float visionRadius)
@@ -93,6 +162,7 @@ public class FSM_Hunter : Agent
             if (boid == null) continue;
             BoidHealth health = boid.GetComponent<BoidHealth>();
             if (health == null || !health.IsDown) continue;
+            if (boid.IsRespawning) continue;
 
             float dist = Vector3.Distance(transform.position, boid.transform.position);
 

@@ -5,8 +5,7 @@ public enum BoidStateType
     Arrive,
     Consume,
     Dead,
-    Respawn,
-    Down
+    Respawn
 }
 
 

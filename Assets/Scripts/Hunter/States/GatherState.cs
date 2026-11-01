@@ -5,8 +5,6 @@ public class GatherState : State
 {
     public FSM_Hunter _hunter;
     public GatherData _data;
-    private HunterFeedBack _feedback;
-
     private float _timer;
 
 
@@ -20,6 +18,7 @@ public class GatherState : State
     {
         _timer = 0;
         _data.target = _hunter.FallendBoidInVision(_data.visionRadius);
+        _hunter.ChangeColor(Color.cyan);
     }
 
     public override void Exit() 

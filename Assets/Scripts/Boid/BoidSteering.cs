@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 
 public class BoidSteering : Agent
@@ -13,8 +14,12 @@ public class BoidSteering : Agent
     [SerializeField] private float detectionRadius;
     [SerializeField] private float baitDetectionRadius = 8f;
     [SerializeField] private float respawnDelay = 5f;
+    [SerializeField] private float consumeInterval = 1f;
+    public float ConsumeInterval => consumeInterval;
     public float RespawnDelay => respawnDelay;
 
+    [Header("UI Estado Boid")]
+    [SerializeField] private TextMeshPro stateText;
 
     [SerializeField] private float separationRadius;
     [SerializeField] private float alignmentRadius;
@@ -37,6 +42,8 @@ public class BoidSteering : Agent
     [SerializeField] private float evadeExitMultiplier = 1.3f;
     [SerializeField] private float evadeSteeringMultiplier = 3f;
     StateMachine _stateMachine;
+    public int BoundaryCrossings { get; private set; }
+    public bool IsRespawning { get; private set; }
     public bool IsDown => _health !=null && _health.IsDown;
     private void Start()
     {
@@ -52,13 +59,15 @@ public class BoidSteering : Agent
         _stateMachine.RegisterState(BoidStateType.Consume, new BoidConsumeState(_stateMachine, this));
         _stateMachine.RegisterState(BoidStateType.Dead, new BoidDeadState(_stateMachine, this));
         _stateMachine.RegisterState(BoidStateType.Respawn, new BoidRespawnState(_stateMachine, this));
-        _stateMachine.RegisterState(BoidStateType.Down, new BoidDownState(_stateMachine, this));
+       
 
         _stateMachine.ChangeState(BoidStateType.Flocking);
 
 
 
     }
+
+
 
     void Update()
     {
@@ -120,6 +129,11 @@ public class BoidSteering : Agent
         if(_health != null) _health.ForceDown();
     }
 
+    public void StopMovement()
+    {
+        _velocity = Vector3.zero;
+    }
+
     public void ResetMovement()
     {
         Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f));
@@ -142,6 +156,7 @@ public class BoidSteering : Agent
 
         _health.ResetHealth();
         ResetMovement();
+        IsRespawning = false;
     }
 
     public void Move(Vector3 steering)
@@ -154,7 +169,14 @@ public class BoidSteering : Agent
             transform.forward = _velocity;
 
         if (goatPen != null)
+        {
+            if (goatPen.IsOutside(transform.position))
+            {
+                BoundaryCrossings++;
+            }
+
             transform.position = goatPen.OutOfGoatPen(transform.position);
+        }
     }
 
     public void SetGoatPen(GoatPen pen)
@@ -169,8 +191,11 @@ public class BoidSteering : Agent
 
     public void StartRespawn()
     {
-        if (_stateMachine != null)
-            _stateMachine.ChangeState(BoidStateType.Respawn);
+        if (_stateMachine == null || IsRespawning)
+            return;
+
+        IsRespawning = true;
+        _stateMachine.ChangeState(BoidStateType.Respawn);
     }
 
     public Vector3 Flocking()
@@ -362,6 +387,19 @@ public class BoidSteering : Agent
 
         foreach (Renderer renderer in renderers)
             renderer.enabled = visible;
+
+        Canvas[] canvases = GetComponentsInChildren<Canvas>();
+
+        foreach (Canvas canvas in canvases)
+            canvas.enabled = visible;
+    }
+
+    public void UpdateStateText(string stateName)
+    {
+        if (stateText != null)
+        {
+            stateText.text = stateName;
+        }
     }
     private void OnDrawGizmosSelected()
     {

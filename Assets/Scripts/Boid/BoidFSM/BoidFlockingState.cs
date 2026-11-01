@@ -10,6 +10,11 @@ public class BoidFlockingState : State
         _boid = boid;
     }
 
+    public override void Enter()
+    {
+        _boid.UpdateStateText("Flocking");
+    }
+
     public override void Update()
     {
         if (_boid.IsDown) { stateMachine.ChangeState(BoidStateType.Dead); return; }

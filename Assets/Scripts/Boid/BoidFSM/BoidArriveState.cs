@@ -12,9 +12,11 @@ public class BoidArriveState : State
 
     public override void Enter()
     {
+        _boid.UpdateStateText("Arrive");
         _boid.TryGetBait(out _bait);
     }
 
+    
     public override void Update()
     {
 
