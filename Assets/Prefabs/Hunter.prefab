@@ -403,20 +403,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81bde4f1eaeafa948855e845d43edc06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FSM_Hunter
-  maxSpeed: 7
+  maxSpeed: 18
   dataPatrol:
-    wayPoints:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    transform: {fileID: 902537210762375514}
-    wayPointCheckDistance: 1
     baitPrefab: {fileID: 98230039591851437, guid: 42309429fa851e6408534262c6cd5978, type: 3}
     baitSpawnTime: 5
     maxBaits: 5
-    spawnAreaMin: {x: 0, y: 0, z: 0}
-    spawnAreaMax: {x: 0, y: 0, z: 0}
   dataAttack:
     target: {fileID: 0}
     meleeAtackRadius: 2
@@ -438,6 +429,7 @@ MonoBehaviour:
   safeZoneA: {fileID: 0}
   safeZoneB: {fileID: 0}
   requiredBoids: 3
+  wolfDetectionRadius: 10
 --- !u!54 &7641386480748994089
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -5,6 +5,26 @@ public class HunterPerception : MonoBehaviour
 {
     private readonly List<BoidSteering> nearbyBoids = new();
 
+    public bool IsWolfNearby(float detectionRadius)
+    {
+        Collider[] colliders = Physics.OverlapSphere(transform.position,detectionRadius);
+
+        foreach (Collider collider in colliders)
+        {
+            WolfController wolf = collider.GetComponentInParent<WolfController>();
+
+            if (wolf == null)
+                continue;
+
+            float distance = Vector3.Distance(transform.position,wolf.transform.position);
+
+            if (distance <= detectionRadius)
+                return true;
+        }
+
+        return false;
+    }
+
     private void Update()
     {
         nearbyBoids.RemoveAll(boid => boid == null);

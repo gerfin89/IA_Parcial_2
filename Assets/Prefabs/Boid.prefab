@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74b978565541e844aa2d38cb91901107, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoidSteering
-  maxSpeed: 5
+  maxSpeed: 15
   maxSteering: 5
   slowingDistance: 2
   minDistance: 0.5

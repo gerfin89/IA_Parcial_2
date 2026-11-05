@@ -10,7 +10,8 @@ public enum FarmerState
     Rest,
     Exit,
     Flee,
-    Dead
+    Dead,
+    Search
 
 }
 
@@ -49,8 +50,10 @@ public class FSM_Hunter : Agent
 
     private HunterPerception perception;
     public HunterPerception Perception => perception;
+    public float MoveSpeed => maxSpeed;
     public void Die()
     {
+        isFleeing = false;
         stateMachine.ChangeState(FarmerState.Dead);
     }
 
@@ -59,7 +62,9 @@ public class FSM_Hunter : Agent
     public bool IsEnergyEmpty => _currentEnergy <= 0f;
     public bool IsEnergyFull => _currentEnergy >= maxEnergy;
     private StateMachine stateMachine;
+    private bool isFleeing;
     private Vector3 _previousPosition;
+    private Vector3 initialPosition;
 
     private float _tbaTimer;
     public bool IsTbaReady =>_tbaTimer <= 0;
@@ -79,8 +84,7 @@ public class FSM_Hunter : Agent
             return;
 
         collectedBoids++;
-
-        Debug.Log($"Hunter recolectó {collectedBoids}/{requiredBoids} Boids");
+                
     }
     public void ConsumeEnergy()
     {
@@ -112,10 +116,12 @@ public class FSM_Hunter : Agent
           
     private void Awake()
     {
+        initialPosition = transform.position;
         _previousPosition = transform.position;
         _currentEnergy = maxEnergy;
         navigation = GetComponent<HunterNavigation>();
         perception = GetComponent<HunterPerception>();
+
 
         if (staminaBar != null)
         {
@@ -134,6 +140,7 @@ public class FSM_Hunter : Agent
         ExitState exitState = new ExitState(this, stateMachine);
         FleeState fleeState = new FleeState(this, stateMachine);
         HunterDeadState deadState = new HunterDeadState(this, stateMachine);
+        SearchState searchState = new SearchState(this, stateMachine);
 
         stateMachine.RegisterState(FarmerState.Idle,idleState);
         stateMachine.RegisterState(FarmerState.Patrol, patrolState);
@@ -143,6 +150,7 @@ public class FSM_Hunter : Agent
         stateMachine.RegisterState(FarmerState.Exit, exitState);
         stateMachine.RegisterState(FarmerState.Flee, fleeState);
         stateMachine.RegisterState(FarmerState.Dead, deadState);
+        stateMachine.RegisterState(FarmerState.Search, searchState);
 
         stateMachine.ChangeState(FarmerState.Patrol);
                
@@ -150,22 +158,105 @@ public class FSM_Hunter : Agent
 
     private void Update()
     {
-        
         if (_tbaTimer > 0f)
-        {
             _tbaTimer -= Time.deltaTime;
-        }
 
         stateMachine.Update();
 
         if (Time.deltaTime > 0f)
-        {
             _velocity = (transform.position - _previousPosition) / Time.deltaTime;
-        }
 
         _previousPosition = transform.position;
-    } 
-      
+
+        if (stateMachine.currentState is HunterDeadState)
+            return;
+
+        CheckWolfThreat();
+    }
+
+    public bool IsInSafeZone()
+    {
+        return IsNearSafeZone(safeZoneA) || IsNearSafeZone(safeZoneB);
+    }
+
+    private bool IsNearSafeZone(GraphNode zone)
+    {
+        if (zone == null)
+            return false;
+
+        Vector3 hunterPosition = transform.position;
+        Vector3 zonePosition = zone.Position;
+
+        hunterPosition.y = 0f;
+        zonePosition.y = 0f;
+
+        return Vector3.Distance(hunterPosition, zonePosition) <= 2f;
+    }
+
+    [Header("Detección de lobos")]
+    [SerializeField] private float wolfDetectionRadius = 10f;
+
+    public bool IsWolfNearby()
+    {
+        return perception != null &&
+               perception.IsWolfNearby(wolfDetectionRadius);
+    }
+
+    private bool ShouldFlee()
+    {
+        if (!IsWolfNearby())
+            return false;
+
+        if (IsInSafeZone())
+            return false;
+
+        return !HasCollectedAllBoids;
+    }
+    private void CheckWolfThreat()
+    {
+        if (GetComponent<HunterHealth>().IsDead)
+            return;
+
+        if (!ShouldFlee() || isFleeing)
+            return;
+
+        isFleeing = true;
+        stateMachine.ChangeState(FarmerState.Flee);
+    }
+    public void FinishFlee()
+    {
+        if (!isFleeing || !IsInSafeZone())
+            return;
+
+        if (IsWolfNearby())
+            return;
+
+        isFleeing = false;
+        stateMachine.ChangeState(FarmerState.Patrol);
+    }
+    public void RestartCycle()
+    {        
+        collectedBoids = 0;
+               
+        _currentEnergy = maxEnergy;
+
+        if (staminaBar != null)
+            staminaBar.value = _currentEnergy;
+                
+        _tbaTimer = 0f;
+        isFleeing = false;
+               
+        transform.position = initialPosition;
+        _previousPosition = initialPosition;
+        _velocity = Vector3.zero;
+                
+        HunterHealth health = GetComponent<HunterHealth>();
+
+        if (health != null)
+            health.Respawn();
+               
+        stateMachine.ChangeState(FarmerState.Patrol);
+    }
 
     private void OnDrawGizmosSelected()
     {

@@ -12,7 +12,7 @@ public class HunterNavigation : MonoBehaviour
     private readonly AStarPathfinder pathfinder = new();
 
     public GraphPathFollower PathFollower => pathFollower;
-
+    public IReadOnlyList<GraphNode> GraphNodes => graphNodes;
     private void Awake()
     {
         pathFollower = GetComponent<GraphPathFollower>();

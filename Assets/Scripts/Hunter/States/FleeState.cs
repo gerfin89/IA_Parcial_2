@@ -5,6 +5,9 @@ public class FleeState : State
     private readonly FSM_Hunter hunter;
     private GraphNode targetSafeZone;
 
+    private float safeZoneTimer;
+    private const float SafeZoneWaitTime = 5f;
+
     public FleeState(FSM_Hunter hunter, StateMachine stateMachine): base(stateMachine)
     {
         this.hunter = hunter;
@@ -16,13 +19,12 @@ public class FleeState : State
 
         hunter.ChangeColor(Color.yellow);
 
+        safeZoneTimer = 0f;
+
         targetSafeZone = hunter.Navigation.GetClosestSafeZone(hunter.SafeZoneA,hunter.SafeZoneB);
 
         if (targetSafeZone == null)
-        {
-            Debug.LogWarning("Hunter: no hay rutas disponibles hacia las zonas seguras.");
             return;
-        }
 
         hunter.Navigation.CalculatePathTo(targetSafeZone, true);
     }
@@ -32,6 +34,23 @@ public class FleeState : State
         if (targetSafeZone == null)
             return;
 
-        hunter.Navigation.FollowPath(hunter.MaxSpeed);
+        if (!hunter.IsInSafeZone())
+        {
+            safeZoneTimer = 0f;
+            hunter.Navigation.FollowPath(hunter.MaxSpeed);
+            return;
+        }
+
+        WaitInSafeZone();
+    }
+
+    private void WaitInSafeZone()
+    {
+        safeZoneTimer += Time.deltaTime;
+
+        if (safeZoneTimer < SafeZoneWaitTime)
+            return;
+
+        hunter.FinishFlee();
     }
 }

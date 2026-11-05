@@ -3,145 +3,162 @@ using UnityEngine;
 
 public class PatrolState : State
 {
-    public FSM_Hunter _hunter;
-    public PatrolData _data;
-    private int currentNode;
-    private GraphNode currentDestinationNode;
-    private bool isFollowingPath;
-    private float _visionRadius;
-    private float _gatherVisionRadius;
+    private readonly FSM_Hunter hunter;
+    private readonly PatrolData data;
+    private readonly float visionRadius;
+    private readonly float gatherVisionRadius;
+
+    private readonly List<GameObject> spawnedBait = new();
+
+    private GraphNode destinationNode;
     private float baitTimer;
-    private List<GameObject> spawnedBait = new List<GameObject>(); 
-    public PatrolState(FSM_Hunter hunter, PatrolData data, float visionRadius, float gatherVisionRadius, StateMachine stateMachine) : base(stateMachine) 
+    private float searchTimer;
+
+    public PatrolState(
+        FSM_Hunter hunter,
+        PatrolData data,
+        float visionRadius,
+        float gatherVisionRadius,
+        StateMachine stateMachine) : base(stateMachine)
     {
-        _hunter = hunter;
-        _data = data;
-        _visionRadius = visionRadius;
-        _gatherVisionRadius = gatherVisionRadius;
-       
+        this.hunter = hunter;
+        this.data = data;
+        this.visionRadius = visionRadius;
+        this.gatherVisionRadius = gatherVisionRadius;
     }
+
     public override void Enter()
     {
         base.Enter();
-        _hunter.ChangeColor(Color.blue);
-        baitTimer = _data.baitSpawnTime;
-                       
+
+        hunter.ChangeColor(Color.blue);
+
+        baitTimer = data.baitSpawnTime;
+        searchTimer = 10f;
+        destinationNode = null;
     }
 
     public override void Exit()
     {
         base.Exit();
-        isFollowingPath = false;
-        currentDestinationNode = null;
+        destinationNode = null;
     }
 
     public override void Update()
     {
-
-        Transform fallenBoid = _hunter.Perception.FallendBoidInVision(_gatherVisionRadius);
-
-
-        if (fallenBoid != null)
-        {
-            stateMachine.ChangeState  (FarmerState.Gather);
+        if (CheckBoids())
             return;
-        }
-
-        Transform boidDetected = _hunter.Perception.BoidInVision(_visionRadius);
-
-        if (boidDetected != null && _hunter.IsTbaReady)
-        {
-            stateMachine.ChangeState(FarmerState.Attack);
-            return;
-        }
 
         SpawnBait();
 
-        PatrolLoop();
+        if (CheckSearch())
+            return;
 
+        PatrolLoop();
+    }
+
+    private bool CheckBoids()
+    {
+        Transform fallenBoid =
+            hunter.Perception.FallendBoidInVision(gatherVisionRadius);
+
+        if (fallenBoid != null)
+        {
+            stateMachine.ChangeState(FarmerState.Gather);
+            return true;
+        }
+
+        Transform boid =
+            hunter.Perception.BoidInVision(visionRadius);
+
+        if (boid != null && hunter.IsTbaReady)
+        {
+            stateMachine.ChangeState(FarmerState.Attack);
+            return true;
+        }
+
+        return false;
     }
 
     private void SpawnBait()
     {
         baitTimer -= Time.deltaTime;
 
-        if (baitTimer > 0)
+        if (baitTimer > 0f)
             return;
 
-        spawnedBait.RemoveAll(x => x == null);
+        baitTimer = data.baitSpawnTime;
 
-        if(spawnedBait.Count >= _data.maxBaits)
-        {
-            baitTimer = _data.baitSpawnTime;
-            return; 
-        }
-              
-        GameObject bait = Object.Instantiate(_data.baitPrefab,_hunter.transform.position,Quaternion.identity);
+        spawnedBait.RemoveAll(bait => bait == null);
+
+        if (spawnedBait.Count >= data.maxBaits || data.baitPrefab == null)
+            return;
+
+        GameObject bait = Object.Instantiate(data.baitPrefab,hunter.transform.position, Quaternion.identity);
+
         spawnedBait.Add(bait);
-
-        baitTimer = _data.baitSpawnTime;
     }
-
 
     private void PatrolLoop()
     {
-        if (isFollowingPath)
+        if (destinationNode == null || hunter.Navigation.PathFollower.HasReachedDestination)
         {
-            _hunter.Navigation.FollowPath(_hunter.MaxSpeed);
-
-            if (_hunter.Navigation.PathFollower.HasReachedDestination)
-            {
-                isFollowingPath = false;
-                currentDestinationNode = null;
-            }
-
-            return;
+            SelectDestination();
         }
-        var nextWaypoint = _data.wayPoints[currentNode];
+
+        if (destinationNode == null)
+            return;
+
+        hunter.Navigation.FollowPath(hunter.MaxSpeed);
+    }
+
+    private void SelectDestination()
+    {
+        destinationNode = null;
+
+        var nodes = hunter.Navigation.GraphNodes;
+
+        if (nodes == null || nodes.Count == 0)
+            return;
 
        
-        if (Vector3.Distance(nextWaypoint.position, _data.transform.position) <= _data.wayPointCheckDistance)
+        for (int i = 0; i < nodes.Count; i++)
         {
-            currentNode = currentNode + 1 < _data.wayPoints.Count? currentNode + 1 : 0;
+            GraphNode candidate =
+                nodes[Random.Range(0, nodes.Count)];
 
-            nextWaypoint = _data.wayPoints[currentNode];
-        }
+            if (candidate == null || candidate.IsSafeZone)
+                continue;
 
-        if (!_hunter.Navigation.HasClearPathTo(nextWaypoint.position))
-        {
-            currentDestinationNode = _hunter.Navigation.GetNearestNode(nextWaypoint.position);
+            if (Vector3.Distance(
+                hunter.transform.position,
+                candidate.Position) < 2f)
+                continue;
 
-            if (currentDestinationNode == null)
-                return;
+            hunter.Navigation.CalculatePathTo(candidate, true);
 
-            _hunter.Navigation.CalculatePathTo(currentDestinationNode, true);
-            isFollowingPath = true;
-
-           
+            destinationNode = candidate;
             return;
         }
+    }
 
-        var dir = nextWaypoint.position - _data.transform.position;
+    private bool CheckSearch()
+    {
+        searchTimer -= Time.deltaTime;
 
-        _data.transform.position += dir.normalized * _hunter.MaxSpeed * Time.deltaTime;
+        if (searchTimer > 0f)
+            return false;
+
+        stateMachine.ChangeState(FarmerState.Search);
+        return true;
     }
 
     [System.Serializable]
-    public class PatrolData 
+    public class PatrolData
     {
-        public List<Transform> wayPoints;
-        public Transform transform;
-        public float wayPointCheckDistance;
-
         [Header("Bait")]
         public GameObject baitPrefab;
         public float baitSpawnTime = 5f;
         public int maxBaits = 5;
-
-        public Vector3 spawnAreaMin;
-        public Vector3 spawnAreaMax;
     }
-
-
-
 }

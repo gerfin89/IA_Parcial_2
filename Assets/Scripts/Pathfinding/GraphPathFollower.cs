@@ -10,6 +10,7 @@ public class GraphPathFollower : MonoBehaviour
     private int currentNodeIndex;
 
     public bool HasReachedDestination =>currentPath.Count > 0 && currentNodeIndex >= currentPath.Count;
+    public GraphNode NextNode =>currentNodeIndex < currentPath.Count? currentPath[currentNodeIndex]: null;
 
     public void SetPath(List<GraphNode> newPath)
     {
@@ -40,6 +41,7 @@ public class GraphPathFollower : MonoBehaviour
             currentNodeIndex++;
         }
     }
+
 
     private void OnDrawGizmosSelected()
     {

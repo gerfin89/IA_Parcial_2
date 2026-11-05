@@ -19,8 +19,7 @@ public class WolfHowlState : State
 
         timer = 0f;
         howlFinished = false;
-
-        Debug.Log("¡Wolf está aullando!");
+        AlertNearbyWolves();
     }
 
     public override void Update()
@@ -33,10 +32,25 @@ public class WolfHowlState : State
         if (timer >= HowlDuration)
         {
             howlFinished = true;
-            Debug.Log("Wolf terminó de aullar");
-
+            
             stateMachine.ChangeState(WolfState.Chase);
             return;
+        }
+    }
+
+    private void AlertNearbyWolves()
+    {
+        WolfController[] wolves =
+            UnityEngine.Object.FindObjectsByType<WolfController>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (WolfController otherWolf in wolves)
+        {
+            if (otherWolf == wolf)
+                continue;
+
+            otherWolf.ReceiveHowlAlert();
         }
     }
 }

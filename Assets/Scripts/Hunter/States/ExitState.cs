@@ -29,8 +29,9 @@ public class ExitState : State
 
         if (hunter.Navigation.PathFollower.HasReachedDestination)
         {
-            hasFinished = true;
-            Debug.Log("¡Victoria! El Hunter llegó a la salida con los 3 Boids.");
+            hasFinished = true;            
+            hunter.RestartCycle();
+            return;
         }
     }
 }

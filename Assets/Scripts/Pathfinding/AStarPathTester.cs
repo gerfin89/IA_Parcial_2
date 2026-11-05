@@ -16,9 +16,7 @@ public class AStarPathTester : MonoBehaviour
     private void CalculatePath()
     {
         currentPath = pathfinder.FindPath(startNode, goalNode, allowSafeZones);
-
-        Debug.Log($"A*: ruta encontrada con {currentPath.Count} nodos.");
-
+               
         if (pathFollower != null)
         {
             pathFollower.SetPath(currentPath);

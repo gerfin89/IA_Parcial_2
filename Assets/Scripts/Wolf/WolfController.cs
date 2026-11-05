@@ -77,4 +77,37 @@ public class WolfController : MonoBehaviour
 
         return Vector3.Distance(wolfPosition, hunterPosition) <= attackRange;
     }
+
+    public bool IsPositionInSafeZone(Vector3 position)
+    {
+        if (hunterTarget == null)
+            return false;
+
+        FSM_Hunter hunter = hunterTarget.GetComponent<FSM_Hunter>();
+
+        if (hunter == null)
+            return false;
+
+        return IsNearZone(position, hunter.SafeZoneA) ||
+               IsNearZone(position, hunter.SafeZoneB);
+    }
+
+    private bool IsNearZone(Vector3 position, GraphNode zone)
+    {
+        if (zone == null)
+            return false;
+
+        Vector2 wolfPosition = new Vector2(position.x, position.z);
+        Vector2 zonePosition = new Vector2(zone.Position.x, zone.Position.z);
+
+        return Vector2.Distance(wolfPosition, zonePosition) <= 2f;
+    }
+
+    public void ReceiveHowlAlert()
+    {
+        if (stateMachine.currentState is WolfPatrolState)
+        {
+            stateMachine.ChangeState(WolfState.Chase);
+        }
+    }
 }

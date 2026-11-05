@@ -17,18 +17,37 @@ public class WolfPatrolState : State
         base.Enter();
 
         waypointIndex = 0;
-        Debug.Log("Wolf: iniciando patrullaje");
+        
     }
 
     public override void Update()
     {
-        if (wolf.Perception.CanSeeHunter(wolf.HunterTarget))
-        {
-            Debug.Log("¡Wolf detectó al Hunter!");
-
-            stateMachine.ChangeState(WolfState.Howl);
+        if (DetectHunter())
             return;
-        }
+
+        Patrol();
+    }
+
+    private bool DetectHunter()
+    {
+        if (wolf.HunterTarget == null)
+            return false;
+
+        HunterHealth health =
+            wolf.HunterTarget.GetComponent<HunterHealth>();
+
+        if (health == null || health.IsDead)
+            return false;
+
+        if (!wolf.Perception.CanSeeHunter(wolf.HunterTarget))
+            return false;
+
+        stateMachine.ChangeState(WolfState.Howl);
+        return true;
+    }
+
+    private void Patrol()
+    {
         if (wolf.Waypoints == null || wolf.Waypoints.Length < 2)
             return;
 
@@ -37,14 +56,26 @@ public class WolfPatrolState : State
         if (waypoint == null)
             return;
 
+        MoveToWaypoint(waypoint);
+    }
+
+    private void MoveToWaypoint(Transform waypoint)
+    {
         Vector3 destination = waypoint.position;
         destination.y = wolf.transform.position.y;
 
-        wolf.transform.position = Vector3.MoveTowards(wolf.transform.position,destination,wolf.MoveSpeed * Time.deltaTime);
+        Vector3 nextPosition = Vector3.MoveTowards( wolf.transform.position,destination,wolf.MoveSpeed * Time.deltaTime);
 
-        if (Vector3.Distance(wolf.transform.position, destination)<= ReachDistance)
-        {
-            waypointIndex = (waypointIndex + 1) % wolf.Waypoints.Length;
-        }
+        if (wolf.IsPositionInSafeZone(nextPosition))
+            return;
+
+        wolf.transform.position = nextPosition;
+
+        CheckWaypointArrival(destination);
+    }
+
+    private void CheckWaypointArrival(Vector3 destination)
+    {
+        if (Vector3.Distance(wolf.transform.position, destination) <= ReachDistance) waypointIndex = (waypointIndex + 1) % wolf.Waypoints.Length;
     }
 }
