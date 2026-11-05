@@ -24,7 +24,7 @@ public class AttackState : State
     public override void Enter()
     {
         base.Enter();
-        _data.target = _hunter.BoidInVision(_data.visionRadius);
+        _data.target = _hunter.Perception.BoidInVision(_data.visionRadius);
         if (_data.target != null)
         {
             _lastKnownPosition = _data.target.position;
@@ -58,7 +58,7 @@ public class AttackState : State
 
         if (_data.target == null)
         {
-            _data.target = _hunter.BoidInVision(_data.visionRadius);
+            _data.target = _hunter.Perception.BoidInVision(_data.visionRadius);
 
             if (_data.target == null)
             {
@@ -94,7 +94,7 @@ public class AttackState : State
             return;
         }
 
-        Transform deadBoid = _hunter.FallendBoidInVision(_data.visionRadius);
+        Transform deadBoid = _hunter.Perception.FallendBoidInVision(_data.visionRadius);
 
         if (deadBoid != null)
         {
@@ -106,7 +106,7 @@ public class AttackState : State
 
         if (health != null && health.IsDown)
         {
-            _data.target = _hunter.BoidInVision(_data.visionRadius);
+            _data.target = _hunter.Perception.BoidInVision(_data.visionRadius);
 
             if (_data.target != null)
             {

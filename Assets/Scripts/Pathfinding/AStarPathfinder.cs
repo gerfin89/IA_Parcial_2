@@ -72,13 +72,7 @@ public class AStarPathfinder
                     openSet.Add(neighbor);
                 }
             }
-        }
-
-        openSet.Add(start);
-
-        gScore[start] = 0f;
-        fScore[start] = start.GetDistanceTo(goal);
-
+        }        
         return new List<GraphNode>();
     }
 

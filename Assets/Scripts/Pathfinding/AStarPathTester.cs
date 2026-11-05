@@ -10,16 +10,27 @@ public class AStarPathTester : MonoBehaviour
     private readonly AStarPathfinder pathfinder = new();
     private List<GraphNode> currentPath = new();
 
+    [SerializeField] private GraphPathFollower pathFollower;
+
     [ContextMenu("Calcular ruta A*")]
     private void CalculatePath()
     {
-        currentPath = pathfinder.FindPath(
-            startNode,
-            goalNode,
-            allowSafeZones
-        );
+        currentPath = pathfinder.FindPath(startNode, goalNode, allowSafeZones);
 
         Debug.Log($"A*: ruta encontrada con {currentPath.Count} nodos.");
+
+        if (pathFollower != null)
+        {
+            pathFollower.SetPath(currentPath);
+        }
+    }
+
+    private void Update()
+    {
+        if (pathFollower == null)
+            return;
+
+        pathFollower.MoveAlongPath(5f);
     }
 
     private void OnDrawGizmos()

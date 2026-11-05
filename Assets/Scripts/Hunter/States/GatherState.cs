@@ -17,7 +17,7 @@ public class GatherState : State
     public override void Enter()
     {
         _timer = 0;
-        _data.target = _hunter.FallendBoidInVision(_data.visionRadius);
+        _data.target = _data.target = _hunter.Perception.FallendBoidInVision(_data.visionRadius); 
         _hunter.ChangeColor(Color.cyan);
     }
 
@@ -27,54 +27,68 @@ public class GatherState : State
         _data.target = null;
     }
 
-    public override void Update() 
+    public override void Update()
     {
-        if (_data.target == null)
+        if (!HasValidTarget())
         {
-            stateMachine.ChangeState(FarmerState.Patrol);
+            ReturnToPatrol();
             return;
         }
 
-        BoidHealth health = _data.target.GetComponent<BoidHealth>();
-
-        if(health == null || !health.IsDown)
-        {
-            stateMachine.ChangeState(FarmerState.Patrol);
-            return;          
-        }
-
-        float distance = Vector3.Distance(_hunter.transform.position, _data.target.position);
+        float distance = Vector3.Distance(_hunter.transform.position,_data.target.position);
 
         if (distance > _data.gatherDistance)
         {
-            Vector3 direction = _data.target.position - _hunter.transform.position;
-            direction.y = 0;
-
-            _hunter.transform.position += direction.normalized * _hunter.MaxSpeed * Time.deltaTime;
-        }
-        else
-        {
-            _timer += Time.deltaTime;
-
-            if (_timer >= _data.gatherTime)
-            {
-                BoidSteering boid = _data.target.GetComponent<BoidSteering>();
-
-                if (boid != null)
-                {
-                    boid.SetBoidSpawner(_data.boidSpawner);
-                    boid.StartRespawn();
-                }
-
-                _data.target = null;
-                stateMachine.ChangeState(FarmerState.Patrol);
-            }
+            MoveToTarget();
+            return;
         }
 
-       
+        GatherBoid();
     }
 
-   
+    private bool HasValidTarget()
+    {
+        if (_data.target == null)
+            return false;
+
+        BoidHealth health = _data.target.GetComponent<BoidHealth>();
+
+        return health != null && health.IsDown;
+    }
+
+    private void MoveToTarget()
+    {
+        Vector3 direction = _data.target.position - _hunter.transform.position;
+        direction.y = 0f;
+
+        _hunter.transform.position += direction.normalized * _hunter.MaxSpeed * Time.deltaTime;
+    }
+
+    private void GatherBoid()
+    {
+        _timer += Time.deltaTime;
+
+        if (_timer < _data.gatherTime)
+            return;
+
+        BoidSteering boid = _data.target.GetComponent<BoidSteering>();
+
+        if (boid != null)
+        {
+            boid.SetBoidSpawner(_data.boidSpawner);
+            boid.StartRespawn();
+        }
+
+        ReturnToPatrol();
+    }
+
+    private void ReturnToPatrol()
+    {
+        _data.target = null;
+        stateMachine.ChangeState(FarmerState.Patrol);
+    }
+
+
 
     [System.Serializable]
     public class GatherData

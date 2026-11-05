@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,6 +30,14 @@ public class FSM_Hunter : Agent
     [Header("Límit scenary")]
     [SerializeField] private GoatPen goatPen;
 
+
+        
+    private HunterNavigation navigation;
+    public HunterNavigation Navigation => navigation;
+
+    private HunterPerception perception;
+    public HunterPerception Perception => perception;
+
     public GoatPen GoatPen => goatPen;
     private float _currentEnergy;
     public bool IsEnergyEmpty => _currentEnergy <= 0f;
@@ -42,6 +49,23 @@ public class FSM_Hunter : Agent
     public bool IsTbaReady =>_tbaTimer <= 0;
     public void ResetTba() => _tbaTimer = tba;
 
+    [Header("Boids recolectados")]
+    [SerializeField] private int requiredBoids = 3;
+
+    private int collectedBoids = 0;
+
+    public int CollectedBoids => collectedBoids;
+    public bool HasCollectedAllBoids => collectedBoids >= requiredBoids;
+
+    public void RegisterCollectedBoid()
+    {
+        if (HasCollectedAllBoids)
+            return;
+
+        collectedBoids++;
+
+        Debug.Log($"Hunter recolectó {collectedBoids}/{requiredBoids} Boids");
+    }
     public void ConsumeEnergy()
     {
         _currentEnergy -= energyConsumption * Time.deltaTime;
@@ -69,14 +93,13 @@ public class FSM_Hunter : Agent
         if (renderer != null)
             renderer.material.color = color;
     }
-
-    private List<BoidSteering> _nearbyBoid = new List<BoidSteering>();
-    
-
+          
     private void Awake()
     {
         _previousPosition = transform.position;
         _currentEnergy = maxEnergy;
+        navigation = GetComponent<HunterNavigation>();
+        perception = GetComponent<HunterPerception>();
 
         if (staminaBar != null)
         {
@@ -84,7 +107,7 @@ public class FSM_Hunter : Agent
             staminaBar.maxValue = maxEnergy;
             staminaBar.value = _currentEnergy;
         }
-
+              
         stateMachine = new StateMachine();
 
         IdleState idleState = new IdleState(stateMachine);
@@ -100,15 +123,12 @@ public class FSM_Hunter : Agent
         stateMachine.RegisterState(FarmerState.Rest, restState);
         
         stateMachine.ChangeState(FarmerState.Patrol);
-
-        
+               
     }
-
 
     private void Update()
     {
-        _nearbyBoid.RemoveAll(b => b == null);
-
+        
         if (_tbaTimer > 0f)
         {
             _tbaTimer -= Time.deltaTime;
@@ -122,82 +142,8 @@ public class FSM_Hunter : Agent
         }
 
         _previousPosition = transform.position;
-    }
-
-    public Transform BoidInVision(float visionRadius)
-    {
-        Debug.Log("Hunter: Boids detectados = " + _nearbyBoid.Count);
-        Transform inVision = null;
-
-        float minDistance = Mathf.Infinity;
-
-        foreach (var boid in _nearbyBoid)
-        {
-            
-            if ( boid==null ) continue;
-
-            BoidHealth health = boid.GetComponent<BoidHealth>();
-
-            if (health != null && health.IsDown) continue;
-            float dist = Vector3.Distance(transform.position, boid.transform.position);
-
-            if (dist <= visionRadius && dist < minDistance)
-            {
-                minDistance = dist;
-
-                inVision = boid.transform;
-            }
-        }
-        return inVision;
-    }
-
-    public Transform FallendBoidInVision(float visionRadius)
-    {
-
-        Transform inVision = null;
-        float minDistance = Mathf.Infinity;
-
-        foreach (var boid in _nearbyBoid)
-        {
-            if (boid == null) continue;
-            BoidHealth health = boid.GetComponent<BoidHealth>();
-            if (health == null || !health.IsDown) continue;
-            if (boid.IsRespawning) continue;
-
-            float dist = Vector3.Distance(transform.position, boid.transform.position);
-
-            if (dist <= visionRadius && dist < minDistance)
-            {
-                minDistance = dist;
-
-                inVision = boid.transform;
-            }
-            
-        }
-        return (inVision);
-
-
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        BoidSteering boid = other.GetComponentInParent<BoidSteering>();
-
-        if (boid != null && !_nearbyBoid.Contains(boid))
-        {
-            _nearbyBoid.Add(boid);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        BoidSteering boid = other.GetComponentInParent<BoidSteering>();
-
-        if (boid != null)
-        {
-            _nearbyBoid.Remove(boid);
-        }
-    }
+    } 
+      
 
     private void OnDrawGizmosSelected()
     {
