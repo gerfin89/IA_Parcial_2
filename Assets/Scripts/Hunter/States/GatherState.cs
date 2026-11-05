@@ -77,18 +77,23 @@ public class GatherState : State
         {
             boid.SetBoidSpawner(_data.boidSpawner);
             boid.StartRespawn();
+            _hunter.RegisterCollectedBoid();
         }
 
         ReturnToPatrol();
     }
-
     private void ReturnToPatrol()
     {
         _data.target = null;
+
+        if (_hunter.HasCollectedAllBoids)
+        {
+            stateMachine.ChangeState(FarmerState.Exit);
+            return;
+        }
+
         stateMachine.ChangeState(FarmerState.Patrol);
     }
-
-
 
     [System.Serializable]
     public class GatherData
@@ -98,8 +103,6 @@ public class GatherState : State
         public float gatherDistance;
         public float gatherTime;
         public BoidSpawner boidSpawner;
-
-
     }
 }
 

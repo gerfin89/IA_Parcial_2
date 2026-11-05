@@ -11900,6 +11900,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8278650209837708929, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
+      propertyPath: exitNode
+      value: 
+      objectReference: {fileID: 1281434897}
+    - target: {fileID: 8278650209837708929, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
+      propertyPath: safeZoneA
+      value: 
+      objectReference: {fileID: 1812565605}
+    - target: {fileID: 8278650209837708929, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
+      propertyPath: safeZoneB
+      value: 
+      objectReference: {fileID: 1326813217}
+    - target: {fileID: 8278650209837708929, guid: 069c68a8c44735243b93efe9da1f564c, type: 3}
       propertyPath: testGoalNode
       value: 
       objectReference: {fileID: 1281434897}

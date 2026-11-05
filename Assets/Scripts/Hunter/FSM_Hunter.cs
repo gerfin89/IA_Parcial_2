@@ -7,7 +7,9 @@ public enum FarmerState
     Patrol,
     Attack,
     Gather,
-    Rest
+    Rest,
+    Exit,
+    Flee
 
 }
 
@@ -30,8 +32,17 @@ public class FSM_Hunter : Agent
     [Header("Límit scenary")]
     [SerializeField] private GoatPen goatPen;
 
+    [Header("Salida del mapa")]
+    [SerializeField] private GraphNode exitNode;
+    public GraphNode ExitNode => exitNode;
 
-        
+    [Header("Zonas seguras")]
+    [SerializeField] private GraphNode safeZoneA;
+    [SerializeField] private GraphNode safeZoneB;
+    public GraphNode SafeZoneA => safeZoneA;
+    public GraphNode SafeZoneB => safeZoneB;
+
+
     private HunterNavigation navigation;
     public HunterNavigation Navigation => navigation;
 
@@ -115,13 +126,17 @@ public class FSM_Hunter : Agent
         AttackState attackState = new AttackState(this, dataAttack, stateMachine);
         GatherState gatherState = new GatherState(this, dataGather,stateMachine);
         RestState restState = new RestState(this, stateMachine);
+        ExitState exitState = new ExitState(this, stateMachine);
+        FleeState fleeState = new FleeState(this, stateMachine);
 
         stateMachine.RegisterState(FarmerState.Idle,idleState);
         stateMachine.RegisterState(FarmerState.Patrol, patrolState);
         stateMachine.RegisterState(FarmerState.Attack, attackState);
         stateMachine.RegisterState(FarmerState.Gather, gatherState);
         stateMachine.RegisterState(FarmerState.Rest, restState);
-        
+        stateMachine.RegisterState(FarmerState.Exit, exitState);
+        stateMachine.RegisterState(FarmerState.Flee, fleeState);
+
         stateMachine.ChangeState(FarmerState.Patrol);
                
     }

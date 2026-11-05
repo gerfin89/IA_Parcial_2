@@ -28,10 +28,7 @@ public class HunterNavigation : MonoBehaviour
             if (node == null)
                 continue;
 
-            float distance = Vector2.Distance(
-                new Vector2(position.x, position.z),
-                new Vector2(node.Position.x, node.Position.z)
-            );
+            float distance = Vector2.Distance(new Vector2(position.x, position.z),new Vector2(node.Position.x, node.Position.z));
 
             if (distance < minDistance)
             {
@@ -53,24 +50,56 @@ public class HunterNavigation : MonoBehaviour
         CalculatePath(start, goal, allowSafeZones);
     }
 
-    public void CalculatePath(
-        GraphNode start,
-        GraphNode goal,
-        bool allowSafeZones)
+    public void CalculatePath(GraphNode start, GraphNode goal,bool allowSafeZones)
     {
         if (start == null || goal == null)
             return;
 
-        List<GraphNode> path = pathfinder.FindPath(
-            start,
-            goal,
-            allowSafeZones
-        );
+        List<GraphNode> path = pathfinder.FindPath(start,goal,allowSafeZones);
 
         if (pathFollower == null)
             return;
 
         pathFollower.SetPath(path);
+    }
+
+    public float GetPathDistance(List<GraphNode> path)
+    {
+        if (path == null || path.Count == 0)
+            return Mathf.Infinity;
+
+        float distance = 0f;
+
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            distance += path[i].GetDistanceTo(path[i + 1]);
+        }
+
+        return distance;
+    }
+
+    public GraphNode GetClosestSafeZone(GraphNode safeZoneA, GraphNode safeZoneB)
+    {
+        List<GraphNode> pathA = GetPath(safeZoneA, true);
+        List<GraphNode> pathB = GetPath(safeZoneB, true);
+
+        float distanceA = GetPathDistance(pathA);
+        float distanceB = GetPathDistance(pathB);
+
+        if (float.IsPositiveInfinity(distanceA) && float.IsPositiveInfinity(distanceB))
+            return null;
+
+        return distanceA <= distanceB ? safeZoneA : safeZoneB;
+    }
+
+    public List<GraphNode> GetPath(GraphNode goal, bool allowSafeZones)
+    {
+        GraphNode start = GetNearestNode(transform.position);
+
+        if (start == null || goal == null)
+            return new List<GraphNode>();
+
+        return pathfinder.FindPath(start, goal, allowSafeZones);
     }
 
     public void FollowPath(float speed)
@@ -90,11 +119,6 @@ public class HunterNavigation : MonoBehaviour
         if (direction.sqrMagnitude <= Mathf.Epsilon)
             return true;
 
-        return !Physics.Raycast(
-            origin,
-            direction.normalized,
-            direction.magnitude,
-            obstacleMask
-        );
+        return !Physics.Raycast( origin, direction.normalized, direction.magnitude,obstacleMask);
     }
 }
