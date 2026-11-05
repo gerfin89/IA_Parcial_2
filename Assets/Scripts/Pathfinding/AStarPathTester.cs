@@ -1,0 +1,40 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AStarPathTester : MonoBehaviour
+{
+    [SerializeField] private GraphNode startNode;
+    [SerializeField] private GraphNode goalNode;
+    [SerializeField] private bool allowSafeZones = true;
+
+    private readonly AStarPathfinder pathfinder = new();
+    private List<GraphNode> currentPath = new();
+
+    [ContextMenu("Calcular ruta A*")]
+    private void CalculatePath()
+    {
+        currentPath = pathfinder.FindPath(
+            startNode,
+            goalNode,
+            allowSafeZones
+        );
+
+        Debug.Log($"A*: ruta encontrada con {currentPath.Count} nodos.");
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (currentPath == null || currentPath.Count == 0)
+            return;
+
+        Gizmos.color = Color.yellow;
+
+        for (int i = 0; i < currentPath.Count - 1; i++)
+        {
+            Gizmos.DrawLine(
+                currentPath[i].Position + Vector3.up * 1.5f,
+                currentPath[i + 1].Position + Vector3.up * 1.5f
+            );
+        }
+    }
+}
