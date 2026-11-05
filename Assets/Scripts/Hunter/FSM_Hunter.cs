@@ -9,7 +9,8 @@ public enum FarmerState
     Gather,
     Rest,
     Exit,
-    Flee
+    Flee,
+    Dead
 
 }
 
@@ -128,6 +129,7 @@ public class FSM_Hunter : Agent
         RestState restState = new RestState(this, stateMachine);
         ExitState exitState = new ExitState(this, stateMachine);
         FleeState fleeState = new FleeState(this, stateMachine);
+        HunterDeadState deadState = new HunterDeadState(this, stateMachine);
 
         stateMachine.RegisterState(FarmerState.Idle,idleState);
         stateMachine.RegisterState(FarmerState.Patrol, patrolState);
@@ -136,6 +138,7 @@ public class FSM_Hunter : Agent
         stateMachine.RegisterState(FarmerState.Rest, restState);
         stateMachine.RegisterState(FarmerState.Exit, exitState);
         stateMachine.RegisterState(FarmerState.Flee, fleeState);
+        stateMachine.RegisterState(FarmerState.Dead, deadState);
 
         stateMachine.ChangeState(FarmerState.Patrol);
                
@@ -157,8 +160,32 @@ public class FSM_Hunter : Agent
         }
 
         _previousPosition = transform.position;
-    } 
-      
+    }
+
+    public bool IsInSafeZone()
+    {
+        return IsNearSafeZone(safeZoneA) || IsNearSafeZone(safeZoneB);
+    }
+
+    private bool IsNearSafeZone(GraphNode zone)
+    {
+        if (zone == null)
+            return false;
+
+        Vector3 hunterPosition = transform.position;
+        Vector3 zonePosition = zone.Position;
+
+        hunterPosition.y = 0f;
+        zonePosition.y = 0f;
+
+        return Vector3.Distance(hunterPosition, zonePosition) <= 2f;
+    }
+
+    public void Die()
+    {
+        stateMachine.ChangeState(FarmerState.Dead);
+    }
+
 
     private void OnDrawGizmosSelected()
     {
