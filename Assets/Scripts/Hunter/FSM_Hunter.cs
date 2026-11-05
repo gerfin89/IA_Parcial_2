@@ -9,7 +9,8 @@ public enum FarmerState
     Gather,
     Rest,
     Exit,
-    Flee
+    Flee,
+    Dead
 
 }
 
@@ -48,6 +49,10 @@ public class FSM_Hunter : Agent
 
     private HunterPerception perception;
     public HunterPerception Perception => perception;
+    public void Die()
+    {
+        stateMachine.ChangeState(FarmerState.Dead);
+    }
 
     public GoatPen GoatPen => goatPen;
     private float _currentEnergy;
@@ -128,6 +133,7 @@ public class FSM_Hunter : Agent
         RestState restState = new RestState(this, stateMachine);
         ExitState exitState = new ExitState(this, stateMachine);
         FleeState fleeState = new FleeState(this, stateMachine);
+        HunterDeadState deadState = new HunterDeadState(this, stateMachine);
 
         stateMachine.RegisterState(FarmerState.Idle,idleState);
         stateMachine.RegisterState(FarmerState.Patrol, patrolState);
@@ -136,6 +142,7 @@ public class FSM_Hunter : Agent
         stateMachine.RegisterState(FarmerState.Rest, restState);
         stateMachine.RegisterState(FarmerState.Exit, exitState);
         stateMachine.RegisterState(FarmerState.Flee, fleeState);
+        stateMachine.RegisterState(FarmerState.Dead, deadState);
 
         stateMachine.ChangeState(FarmerState.Patrol);
                
